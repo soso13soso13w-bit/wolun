@@ -9,13 +9,14 @@ export default function App() {
     birthDate: '',
     calendarType: 'solar',
     birthTime: 'unknown',
+    interest: 'comprehensive',
     question: ''
   });
   const [validationError, setValidationError] = useState('');
-  const [paymentStep, setPaymentStep] = useState('checkout'); // 'checkout', 'complete'
+  const [paymentStep, setPaymentStep] = useState('checkout');
   const [readingResult, setReadingResult] = useState(null);
 
-  // 수정된 입금 계좌 정보
+  // 계좌 정보
   const myAccount = {
     bank: '토스뱅크',
     accountNumber: '1002-1526-1128',
@@ -23,10 +24,10 @@ export default function App() {
   };
 
   const products = [
-    { id: 'free', name: '오늘의 한 줄 운세', price: 0, desc: '매일 확인하는 가벼운 마음의 나침반' },
-    { id: 'custom', name: '맞춤 사주 리딩', price: 3900, desc: '오행과 성향을 기반으로 한 디테일한 분석' },
-    { id: 'comprehensive', name: '종합 사주 리딩', price: 9900, desc: '연애, 재물, 직업운까지 아우르는 심층 풀이' },
-    { id: 'ai', name: 'AI 심층 상담', price: 4900, desc: '고민에 맞춘 1:1 심층 맞춤형 조언' },
+    { id: 'free', name: '오늘의 우주 파동 운세', price: 0, desc: '지구 공전 주기 기반의 일일 공명 주파수 분석' },
+    { id: 'custom', name: '천체 자기장 맞춤 리딩', price: 3900, desc: '탄생 시점 태양계 천체 배치가 미친 에너지 벡터' },
+    { id: 'comprehensive', name: '시공간 종합 사주론', price: 9900, desc: '양자역학적 확률론 및 음양오행 우주론 심층 분석' },
+    { id: 'ai', name: 'AI 천문·사주 심층 상담', price: 4900, desc: '우주론적 알고리즘 기반 1:1 맞춤형 진로·운명 솔루션' },
   ];
 
   const handleFormChange = (e) => {
@@ -34,6 +35,7 @@ export default function App() {
     setSajuForm(prev => ({ ...prev, [name]: value }));
   };
 
+  // 과학적 우주론 + 명리학 종합 분석 알고리즘
   const handleSajuSubmit = (e) => {
     e.preventDefault();
     if (!sajuForm.name.trim()) {
@@ -46,15 +48,65 @@ export default function App() {
     }
     setValidationError('');
     
+    const birthDateObj = new Date(sajuForm.birthDate);
+    const year = birthDateObj.getFullYear();
+    const month = birthDateObj.getMonth() + 1;
+    const day = birthDateObj.getDate();
+    const nameLen = sajuForm.name.length;
+
+    // 우주론적 파동수 계산 (지구 공전 각도 및 생년월일 조합)
+    const orbitalAngle = Math.round((month / 12) * 360);
+    const quantumVector = (year + month + day + nameLen) % 4;
+
+    // 1. 우주론적 성향 분석 (천체 물리적 고유 기운)
+    const cosmicPersonalities = [
+      `지구 황도 $${orbitalAngle}^\circ$ 부근의 태양 광자 에너지 밀도가 강한 시기에 태어나, 확산과 발산의 양자 파동을 가집니다. 높은 열정과 뛰어난 추진력으로 주변 환경에 에너지를 공급하는 분입니다.`,
+      `태양계 거대 가스 행성(목성·토성)의 중력 섭동이 정밀하게 균형을 이루는 구간에 태어나, 매우 안정적이고 단단한 질량 중심(Center of Mass)을 지닙니다. 냉철한 분석력과 깊은 지혜가 강점입니다.`,
+      `지구 자전축 자기장의 미세한 진동 주파수와 깊게 공명하는 생체 에너지를 지니셨습니다. 뛰어난 직관력과 유연한 임기응변으로 변화무쌍한 우주적 변수 속에서도 최적의 궤도를 찾아냅니다.`,
+      `우주 고유 물질의 질서정연한 결정 구조(Crystal Structure)를 닮아, 원칙과 신뢰를 바탕으로 삶의 인과율을 명확히 세워나가는 조화로운 공명체를 형성하고 있습니다.`
+    ];
+
+    // 2. 오행의 과학적 Re-interpretation (원소와 물질 상태)
+    const elementalPhysics = [
+      ' [목(木) - 바이오 에너지계]: 유기물 결합과 수목의 성장을 촉진하는 탄소 기반 발산 에너지 형태입니다. 새로운 기획과 시도를 주도하는 강력한 전진 스펙트럼을 보입니다.',
+      ' [화(火) - 플라즈마·광자계]: 열역학 제2법칙의 에너지를 광범위하게 방출하는 파동입니다. 타인을 끌어당기는 기질과 화려한 표현력이 뛰어난 전자기적 스펙트럼입니다.',
+      ' [금(金) - 고밀도 결정계]: 원자 간 결합력이 단단한 금속성 고체 상태를 연상시키는 정밀한 에너지입니다. 판단이 명확하고 리스크를 최소화하는 안정된 궤도를 그립니다.',
+      ' [수(水) - 유체·유동계]: 엔트로피를 극대화하며 어떤 용기든 형태를 맞추는 유체의 물리적 기질입니다. 뛰어난 수용성과 깊은 잠재 지능을 상징합니다.'
+    ];
+
+    // 3. 인과율과 확률론 기반 운세 분석
+    const quantumRomance = [
+      '유사한 진동수를 가진 인연과의 양자 얽힘(Quantum Entanglement) 현상이 강하게 나타납니다. 서로의 공간을 존중할 때 가장 견고한 인력(Gravitational Attraction)이 형성됩니다.',
+      '자기장의 N극과 S극처럼 상호 보완적인 상극 기운의 상대와 강한 상호작용을 일으키는 구조입니다. 차이점을 인지할수록 연애 궤도가 더욱 견고해집니다.',
+      '은은하고 지속적인 자력선 형태의 대인관계를 형성합니다. 급격한 변화보다는 장기적이고 유기적인 교류에서 깊은 안정을 얻습니다.'
+    ];
+
+    const quantumWealth = [
+      '에너지 보존 법칙처럼 성실히 축적한 전위차가 곧 재물적 위치 에너지로 변환되는 선형적 구조입니다. 꾸준한 가치 투자가 유효합니다.',
+      '계성(Symmetry)이 깨질 때 새로운 기회가 창출되는 비선형적 자산 흐름입니다. 뜻밖의 아이디어나 변곡점에서 큰 재물적 이득을 얻습니다.',
+      '질량 보존의 법칙에 따라 가치 있는 자산 중심으로 충동적 이탈을 막는 자성체 구조입니다. 자산의 분산 배치가 행운을 가져다줍니다.'
+    ];
+
+    const quantumCareer = [
+      '엔지니어링, 정보 처리, 기획 등 복잡한 인과관계를 체계화하고 시스템을 구축하는 분야에서 강한 출력(Power Output)을 발휘합니다.',
+      '사람 간의 정보와 감정을 상호 변환하는 아날로그-디지털 인터페이스 역할을 잘 수행합니다. 소통, 미디어, 교육 분야에 우수한 궤도를 지닙니다.',
+      '독창적인 스펙트럼을 가진 분야나 주도적 관리가 가능한 궤도에서 가장 높은 효율과 성취를 만들어냅니다.'
+    ];
+
+    // 질문 답변
+    const questionAnswer = sajuForm.question 
+      ? `질문하신 "${sajuForm.question}"에 대해: 현재 당신의 파동은 변곡점을 통과하는 중입니다. 거시적인 흐름을 유지하며 에너지 소비를 최소화하면 관성의 법칙에 따라 자연스럽게 원하는 궤도에 도달할 것입니다.`
+      : null;
+
     setReadingResult({
       name: sajuForm.name,
-      personality: '당신은 깊은 통찰력과 따뜻한 감성을 동시에 지닌 분입니다. 주변 사람들에게 선한 영향력을 주며, 세심한 관찰력으로 기회를 포착하는 능력이 뛰어납니다.',
-      fiveElements: '목(木)과 화(火)의 기운이 조화롭게 어우러져 있어 표현력이 풍부하고 새로운 도전을 즐기는 성향입니다.',
-      romance: '진실된 인연을 중요하게 생각합니다. 상대방의 작은 배려에 크게 감동하며, 안정적이고 깊은 교감을 나누는 연애를 선호합니다.',
-      wealth: '꾸준하고 성실한 자산 관리가 빛을 발하는 구조입니다. 감정적인 소비를 줄이고 장기적인 가치에 투자할 때 재물이 안정적으로 늘어납니다.',
-      career: '창의적인 아이디어를 발휘하거나 사람들과 소통하는 분야에서 큰 성취를 이룰 수 있습니다.',
-      dailyFortune: '오늘은 마음의 여유를 가지고 주변을 둘러보기에 좋은 날입니다.',
-      advice: '주변의 시선보다는 본인의 내면의 목소리에 귀를 기울여보세요.'
+      birthCoordinates: `${year}년 ${month}월 ${day}일 (황도각 $${orbitalAngle}^\circ$)`,
+      personality: cosmicPersonalities[quantumVector],
+      elementPhysics: elementalPhysics[month % 4],
+      romance: quantumRomance[nameLen % 3],
+      wealth: quantumWealth[day % 3],
+      career: quantumCareer[(year + month) % 3],
+      questionAnswer: questionAnswer
     });
 
     setCurrentPage('result');
@@ -76,28 +128,28 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0b132b', color: '#f8fafc', paddingBottom: '60px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#070a13', color: '#f8fafc', paddingBottom: '60px' }}>
       {/* 상단 내비게이션 */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: 'rgba(11, 19, 43, 0.9)', borderBottom: '1px solid rgba(245, 158, 11, 0.2)', backdropFilter: 'blur(8px)' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: 'rgba(7, 10, 19, 0.92)', borderBottom: '1px solid rgba(56, 189, 248, 0.2)', backdropFilter: 'blur(10px)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <button 
             onClick={() => setCurrentPage('home')} 
-            style={{ background: 'none', border: 'none', color: '#fef3c7', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+            style={{ background: 'none', border: 'none', color: '#e0f2fe', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            <span>🌙</span> 월운 (月運)
+            <span>🌌</span> 월운 (月運) — Cosmos Saju
           </button>
           
           <nav style={{ display: 'flex', gap: '24px', fontSize: '15px' }}>
-            <button onClick={() => setCurrentPage('home')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer' }}>홈</button>
-            <button onClick={() => setCurrentPage('input')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer' }}>사주 보기</button>
-            <button onClick={() => setCurrentPage('products')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer' }}>유료 상품</button>
+            <button onClick={() => setCurrentPage('home')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>홈</button>
+            <button onClick={() => setCurrentPage('input')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>우주 좌표 분석</button>
+            <button onClick={() => setCurrentPage('products')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>유료 분석</button>
           </nav>
 
           <button 
             onClick={() => setCurrentPage('input')}
-            style={{ padding: '10px 18px', background: 'linear-gradient(to right, #d97706, #f59e0b)', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px' }}
+            style={{ padding: '10px 18px', background: 'linear-gradient(135deg, #0284c7, #38bdf8)', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px' }}
           >
-            무료 운세 시작
+            무료 우주 분석
           </button>
         </div>
       </header>
@@ -106,42 +158,42 @@ export default function App() {
       <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px' }}>
         {currentPage === 'home' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: 'linear-gradient(to bottom, rgba(28, 37, 65, 0.5), transparent)', borderRadius: '24px', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
-              <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#fcd34d', fontSize: '13px', marginBottom: '20px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                ✨ 달의 흐름을 읽는 지혜
+            <div style={{ textAlign: 'center', padding: '70px 20px', background: 'radial-gradient(circle at center, rgba(56, 189, 248, 0.12) 0%, transparent 70%)', borderRadius: '28px', border: '1px solid rgba(56, 189, 248, 0.15)' }}>
+              <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', backgroundColor: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', fontSize: '13px', marginBottom: '20px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                🪐 천체물리학 × 고전 명리학의 만남
               </div>
-              <h1 style={{ fontSize: '38px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '20px' }}>
-                당신의 운명에 비치는 은은한 달빛
+              <h1 style={{ fontSize: '38px', fontWeight: 'bold', color: '#f0f9ff', marginBottom: '20px', lineHeight: '1.3' }}>
+                당신이 탄생한 순간,<br />우주 시공간이 각인한 고유 파동
               </h1>
-              <p style={{ color: '#94a3b8', maxWidth: '550px', margin: '0 auto 30px auto', lineHeight: '1.6', fontSize: '16px' }}>
-                동양 명리학의 깊이와 현대적 통찰이 만나는 곳.<br />월운(月運)과 함께 삶의 길목에서 지혜로운 길을 찾아보세요.
+              <p style={{ color: '#94a3b8', maxWidth: '620px', margin: '0 auto 30px auto', lineHeight: '1.7', fontSize: '15px' }}>
+                동양의 음양오행은 단순한 미신이 아닌, <b>지구 자전·공전 주기와 천체 자기장 변화</b>를 관측한 경험 과학입니다. 월운(月運)의 과학적 시공간 알고리즘으로 당신의 삶의 궤도를 정밀하게 추적해 보세요.
               </p>
               <button 
                 onClick={() => setCurrentPage('input')}
-                style={{ padding: '16px 32px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '16px' }}
+                style={{ padding: '16px 36px', backgroundColor: '#38bdf8', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '16px', boxShadow: '0 10px 25px rgba(56, 189, 248, 0.25)' }}
               >
-                무료 운세 시작하기 ➔
+                우주 시공간 분석 시작 ➔
               </button>
             </div>
 
             <div>
-              <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '24px', textAlign: 'center' }}>월운 추천 서비스</h2>
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#e0f2fe', marginBottom: '24px', textAlign: 'center' }}>월운 우주론적 서비스</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
                 {products.map(p => (
-                  <div key={p.id} style={{ backgroundColor: 'rgba(28, 37, 65, 0.4)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div key={p.id} style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '24px', borderRadius: '18px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
-                      <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '10px' }}>{p.name}</h3>
+                      <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#f0f9ff', marginBottom: '10px' }}>{p.name}</h3>
                       <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '20px', lineHeight: '1.5' }}>{p.desc}</p>
                     </div>
                     <div>
-                      <div style={{ color: '#fcd34d', fontWeight: 'bold', marginBottom: '16px' }}>
+                      <div style={{ color: '#38bdf8', fontWeight: 'bold', marginBottom: '16px', fontSize: '16px' }}>
                         {p.price === 0 ? '무료' : `${p.price.toLocaleString()}원`}
                       </div>
                       <button 
                         onClick={() => p.price === 0 ? setCurrentPage('input') : handleStartPayment(p)}
-                        style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', color: '#f8fafc', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
+                        style={{ width: '100%', padding: '12px', backgroundColor: '#070a13', color: '#f8fafc', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
                       >
-                        {p.price === 0 ? '바로 확인하기' : '신청하기'}
+                        {p.price === 0 ? '바로 분석하기' : '신청하기'}
                       </button>
                     </div>
                   </div>
@@ -153,22 +205,22 @@ export default function App() {
 
         {currentPage === 'products' && (
           <div>
-            <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '10px', textAlign: 'center' }}>프리미엄 사주 상품</h2>
-            <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>원하시는 심층 분석 상품을 신청해 보세요.</p>
+            <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#e0f2fe', marginBottom: '10px', textAlign: 'center' }}>우주론 심층 분석 리포트</h2>
+            <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>원하시는 양자 파동 및 정밀 천체 분석 상품을 신청하세요.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px' }}>
               {products.map(p => (
-                <div key={p.id} style={{ backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div key={p.id} style={{ backgroundColor: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
-                    <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '12px' }}>{p.name}</h3>
+                    <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#f0f9ff', marginBottom: '12px' }}>{p.name}</h3>
                     <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px', lineHeight: '1.6' }}>{p.desc}</p>
                   </div>
                   <div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '20px' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#38bdf8', marginBottom: '20px' }}>
                       {p.price === 0 ? '무료' : `${p.price.toLocaleString()}원`}
                     </div>
                     <button 
                       onClick={() => p.price === 0 ? setCurrentPage('input') : handleStartPayment(p)}
-                      style={{ width: '100%', padding: '14px', backgroundColor: p.price === 0 ? '#334155' : '#f59e0b', color: p.price === 0 ? '#fff' : '#0f172a', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }}
+                      style={{ width: '100%', padding: '14px', backgroundColor: p.price === 0 ? '#334155' : '#38bdf8', color: p.price === 0 ? '#fff' : '#0f172a', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }}
                     >
                       {p.price === 0 ? '무료 이용' : '무통장 입금 신청'}
                     </button>
@@ -180,9 +232,9 @@ export default function App() {
         )}
 
         {currentPage === 'input' && (
-          <div style={{ maxWidth: '550px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.5)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '40px', borderRadius: '24px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '8px', textAlign: 'center' }}>사주 정보 입력</h2>
-            <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '30px' }}>정밀한 풀이를 위해 정확한 정보를 입력해 주세요.</p>
+          <div style={{ maxWidth: '550px', margin: '0 auto', backgroundColor: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(56, 189, 248, 0.25)', padding: '40px', borderRadius: '24px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#e0f2fe', marginBottom: '8px', textAlign: 'center' }}>시공간 좌표 입력</h2>
+            <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '30px' }}>탄생 시점의 정밀한 정량 데이터를 입력해 주세요.</p>
             
             {validationError && (
               <div style={{ marginBottom: '20px', padding: '12px', backgroundColor: 'rgba(127, 29, 29, 0.4)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '10px', color: '#fca5a5', fontSize: '14px' }}>
@@ -192,50 +244,50 @@ export default function App() {
 
             <form onSubmit={handleSajuSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>이름 또는 별칭</label>
+                <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>이름 또는 관측 식별자</label>
                 <input 
                   type="text" 
                   name="name" 
                   value={sajuForm.name} 
                   onChange={handleFormChange}
                   placeholder="홍길동"
-                  style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '12px', backgroundColor: '#070a13', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>생년월일</label>
+                <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>지구 관측 생년월일 (공전 위치)</label>
                 <input 
                   type="date" 
                   name="birthDate" 
                   value={sajuForm.birthDate} 
                   onChange={handleFormChange}
-                  style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '12px', backgroundColor: '#070a13', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>양/음력</label>
+                  <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>달 태양 주기 (양/음력)</label>
                   <select 
                     name="calendarType" 
                     value={sajuForm.calendarType} 
                     onChange={handleFormChange}
-                    style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px', backgroundColor: '#070a13', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
                   >
-                    <option value="solar">양력</option>
-                    <option value="lunar">음력</option>
+                    <option value="solar">태양력 (Solar)</option>
+                    <option value="lunar">태음태양력 (Lunar)</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>태어난 시간</label>
+                  <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>지구 자전 각도 (시간)</label>
                   <select 
                     name="birthTime" 
                     value={sajuForm.birthTime} 
                     onChange={handleFormChange}
-                    style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px', backgroundColor: '#070a13', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
                   >
-                    <option value="unknown">모름</option>
+                    <option value="unknown">미상 (평균값 적용)</option>
                     <option value="morning">오전 (06:00 ~ 11:59)</option>
                     <option value="afternoon">오후 (12:00 ~ 17:59)</option>
                     <option value="night">야간/새벽</option>
@@ -244,22 +296,22 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>상담하고 싶은 질문 (선택)</label>
+                <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>분석하고 싶은 양자 변수/질문 (선택)</label>
                 <textarea 
                   name="question" 
                   value={sajuForm.question} 
                   onChange={handleFormChange}
-                  placeholder="예: 다가오는 이직이나 연애운이 궁금합니다."
+                  placeholder="예: 진로 변경이나 이직에 대한 에너지 벡터가 궁금합니다."
                   rows="3"
-                  style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '10px', color: '#fff', resize: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '12px', backgroundColor: '#070a13', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '10px', color: '#fff', resize: 'none', boxSizing: 'border-box' }}
                 ></textarea>
               </div>
 
               <button 
                 type="submit"
-                style={{ width: '100%', padding: '15px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}
+                style={{ width: '100%', padding: '15px', backgroundColor: '#38bdf8', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}
               >
-                사주 분석 시작하기
+                우주론적 시뮬레이션 실행
               </button>
             </form>
           </div>
@@ -267,35 +319,43 @@ export default function App() {
 
         {currentPage === 'result' && readingResult && (
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            <div style={{ backgroundColor: 'rgba(28, 37, 65, 0.5)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '40px', borderRadius: '24px', textAlign: 'center' }}>
-              <span style={{ color: '#fcd34d', fontSize: '14px', fontWeight: '600' }}>월운(月運) 사주 풀이 결과</span>
-              <h2 style={{ fontSize: '30px', fontWeight: 'bold', color: '#fef3c7', margin: '10px 0 20px 0' }}>{readingResult.name}님의 사주 리딩</h2>
-              <p style={{ color: '#cbd5e1', fontSize: '15px', lineHeight: '1.7', maxWidth: '600px', margin: '0 auto' }}>{readingResult.personality}</p>
+            <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '40px', borderRadius: '24px', textAlign: 'center' }}>
+              <span style={{ color: '#38bdf8', fontSize: '13px', fontWeight: '600', letterSpacing: '1px' }}>COSMOS SAJU ANALYSIS REPORT</span>
+              <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#f0f9ff', margin: '10px 0 6px 0' }}>{readingResult.name} 님의 우주 파동 리포트</h2>
+              <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px' }}>관측 좌표: {readingResult.birthCoordinates}</div>
+              <p style={{ color: '#cbd5e1', fontSize: '15px', lineHeight: '1.7', maxWidth: '640px', margin: '0 auto' }}>{readingResult.personality}</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
-              <div style={{ backgroundColor: 'rgba(28, 37, 65, 0.3)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '24px', borderRadius: '16px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '12px' }}>🔥 오행과 음양</h3>
-                <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>{readingResult.fiveElements}</p>
+              <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '24px', borderRadius: '16px' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 'bold', color: '#38bdf8', marginBottom: '12px' }}>⚛️ 오행의 원소물리학 해석</h3>
+                <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>{readingResult.elementPhysics}</p>
               </div>
-              <div style={{ backgroundColor: 'rgba(28, 37, 65, 0.3)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '24px', borderRadius: '16px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '12px' }}>💖 연애와 대인관계</h3>
+              <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '24px', borderRadius: '16px' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 'bold', color: '#38bdf8', marginBottom: '12px' }}>🌌 양자 얽힘과 인력 (연애·대인관계)</h3>
                 <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>{readingResult.romance}</p>
               </div>
-              <div style={{ backgroundColor: 'rgba(28, 37, 65, 0.3)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '24px', borderRadius: '16px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '12px' }}>💰 재물과 소비 습관</h3>
+              <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '24px', borderRadius: '16px' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 'bold', color: '#38bdf8', marginBottom: '12px' }}>🔋 열역학 및 위치 에너지 (재물운)</h3>
                 <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>{readingResult.wealth}</p>
               </div>
-              <div style={{ backgroundColor: 'rgba(28, 37, 65, 0.3)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '24px', borderRadius: '16px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '12px' }}>💼 직업과 진로</h3>
+              <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '24px', borderRadius: '16px' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 'bold', color: '#38bdf8', marginBottom: '12px' }}>🚀 궤도 유지 및 출력 (직업·진로)</h3>
                 <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>{readingResult.career}</p>
               </div>
             </div>
 
+            {readingResult.questionAnswer && (
+              <div style={{ backgroundColor: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '24px', borderRadius: '18px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#38bdf8', marginBottom: '8px' }}>💬 우주론적 고민 분석 솔루션</h3>
+                <p style={{ color: '#f0f9ff', fontSize: '14px', lineHeight: '1.6' }}>{readingResult.questionAnswer}</p>
+              </div>
+            )}
+
             <div style={{ textAlign: 'center' }}>
               <button 
                 onClick={() => setCurrentPage('home')}
-                style={{ padding: '14px 32px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                style={{ padding: '14px 32px', backgroundColor: '#38bdf8', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
               >
                 처음으로 돌아가기
               </button>
@@ -303,22 +363,22 @@ export default function App() {
           </div>
         )}
 
-        {/* 무통장 입금 안내 결제 화면 */}
+        {/* 무통장 입금 결제 화면 */}
         {currentPage === 'payment' && selectedProduct && (
-          <div style={{ maxWidth: '480px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '36px', borderRadius: '24px' }}>
+          <div style={{ maxWidth: '480px', margin: '0 auto', backgroundColor: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '36px', borderRadius: '24px' }}>
             {paymentStep === 'checkout' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#fef3c7', textAlign: 'center' }}>무통장 입금 신청</h2>
+                <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#e0f2fe', textAlign: 'center' }}>무통장 입금 신청</h2>
                 
-                <div style={{ padding: '16px', backgroundColor: '#0b132b', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                  <div style={{ fontSize: '13px', color: '#94a3b8' }}>선택한 상품</div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#fef3c7', marginTop: '4px' }}>{selectedProduct.name}</div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#fcd34d', marginTop: '4px' }}>{selectedProduct.price.toLocaleString()}원</div>
+                <div style={{ padding: '16px', backgroundColor: '#070a13', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                  <div style={{ fontSize: '13px', color: '#94a3b8' }}>선택한 분석 리포트</div>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#e0f2fe', marginTop: '4px' }}>{selectedProduct.name}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#38bdf8', marginTop: '4px' }}>{selectedProduct.price.toLocaleString()}원</div>
                 </div>
 
-                <div style={{ padding: '18px', backgroundColor: 'rgba(245, 158, 11, 0.08)', borderRadius: '14px', border: '1px dashed rgba(245, 158, 11, 0.4)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ fontSize: '13px', color: '#fcd34d', fontWeight: 'bold' }}>💳 입금 계좌 정보</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>{myAccount.bank} <span style={{ color: '#fcd34d' }}>{myAccount.accountNumber}</span></div>
+                <div style={{ padding: '18px', backgroundColor: 'rgba(56, 189, 248, 0.08)', borderRadius: '14px', border: '1px dashed rgba(56, 189, 248, 0.4)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '13px', color: '#38bdf8', fontWeight: 'bold' }}>💳 입금 계좌 정보</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>{myAccount.bank} <span style={{ color: '#38bdf8' }}>{myAccount.accountNumber}</span></div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1' }}>예금주: {myAccount.holder}</div>
                 </div>
 
@@ -329,9 +389,9 @@ export default function App() {
                     value={depositorName} 
                     onChange={(e) => setDepositorName(e.target.value)}
                     placeholder="실제 입금하실 분의 성함"
-                    style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px', backgroundColor: '#070a13', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
                   />
-                  <span style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px', display: 'block' }}>※ 입금 확인 후 풀이가 진행됩니다.</span>
+                  <span style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px', display: 'block' }}>※ 입금 확인 후 정밀 우주 파동 리포트가 생성됩니다.</span>
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
@@ -343,7 +403,7 @@ export default function App() {
                   </button>
                   <button 
                     onClick={handleConfirmDeposit}
-                    style={{ flex: 1, padding: '14px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                    style={{ flex: 1, padding: '14px', backgroundColor: '#38bdf8', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
                   >
                     입금 완료 신청
                   </button>
@@ -353,18 +413,18 @@ export default function App() {
 
             {paymentStep === 'complete' && (
               <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px 0' }}>
-                <div style={{ fontSize: '48px' }}>📩</div>
-                <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#fef3c7' }}>입금 확인 신청 완료</h2>
+                <div style={{ fontSize: '48px' }}>🛰️</div>
+                <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#e0f2fe' }}>입금 확인 신청 완료</h2>
                 <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>
                   <b>{depositorName}</b>님의 입금 신청이 접수되었습니다.<br />
-                  입금 확인 후 사주 분석이 시작됩니다.
+                  입금 확인 후 정밀 우주론 사주 풀이가 진행됩니다.
                 </p>
-                <div style={{ padding: '14px', backgroundColor: '#0b132b', borderRadius: '10px', fontSize: '13px', color: '#94a3b8' }}>
+                <div style={{ padding: '14px', backgroundColor: '#070a13', borderRadius: '10px', fontSize: '13px', color: '#94a3b8' }}>
                   문의사항은 카카오톡 채널 또는 이메일로 연락주세요.
                 </div>
                 <button 
                   onClick={() => setCurrentPage('input')}
-                  style={{ width: '100%', padding: '14px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '14px', backgroundColor: '#38bdf8', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
                 >
                   사주 정보 입력하러 가기
                 </button>
@@ -375,9 +435,9 @@ export default function App() {
       </main>
 
       {/* 푸터 */}
-      <footer style={{ marginTop: '80px', borderTop: '1px solid rgba(245, 158, 11, 0.2)', padding: '30px 20px', textAlign: 'center', backgroundColor: '#0b132b', fontSize: '12px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <p>월운(月運) | 대표 서비스</p>
-        <p>본 서비스는 오락 및 참고용이며, 중요한 투자나 법률적 판단은 전문가와 상담하세요.</p>
+      <footer style={{ marginTop: '80px', borderTop: '1px solid rgba(56, 189, 248, 0.2)', padding: '30px 20px', textAlign: 'center', backgroundColor: '#070a13', fontSize: '12px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <p>월운(月運) | 우주론적 사주 풀이 데모</p>
+        <p>본 서비스는 천체물리학적 비유 및 명리학적 분석을 결합한 오락·참고용 서비스입니다.</p>
       </footer>
     </div>
   );
