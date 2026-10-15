@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [depositorName, setDepositorName] = useState('');
   const [sajuForm, setSajuForm] = useState({
     name: '',
     birthDate: '',
@@ -11,22 +12,48 @@ export default function App() {
     question: ''
   });
   const [validationError, setValidationError] = useState('');
+  const [paymentStep, setPaymentStep] = useState('checkout'); // 'checkout', 'pending'
   const [readingResult, setReadingResult] = useState(null);
   
   // 개인 질문 상담 상태
   const [consultQuestion, setConsultQuestion] = useState('');
   const [consultResult, setConsultResult] = useState(null);
 
-  // 상품 목록 (유료 상품은 결제 시스템 부재로 이용 불가 처리)
+  // 운영자 실계좌 정보
+  const myAccount = {
+    bank: '토스뱅크',
+    accountNumber: '1002-1526-1128',
+    holder: '송시우'
+  };
+
+  // 상품 목록
   const products = [
     { id: 'today', name: '오늘의 일주(日柱) 운세', price: 0, desc: '오늘의 천간지지 기운과 일간의 생극 관계 분석', icon: '🌙', badge: '무료', isFree: true },
-    { id: 'custom', name: '정통 사주팔자 8자 분석', price: 3900, desc: '연월일시 4주 8자 산출 및 오행·성향 심층 리포트', icon: '🌌', badge: '유료 (이용 불가)', isFree: false },
-    { id: 'comprehensive', name: '십성·격국 정통 종합 사주', price: 9900, desc: '비겁·식상·재성·관성·인성 십성 분석 및 용신 정밀 진단', icon: '☯️', badge: '유료 (이용 불가)', isFree: false },
-    { id: 'romance', name: '연애·인연 심층 궁합', price: 4900, desc: '연애 성향, 호감 표현 방식, 관계 발전 조언', icon: '💖', badge: '유료 (이용 불가)', isFree: false },
-    { id: 'wealth', name: '재물·자산 관리 리딩', price: 4900, desc: '소비 습관, 재정 관리 방식 및 실천 가능한 재물 팁', icon: '💰', badge: '유료 (이용 불가)', isFree: false },
-    { id: 'career', name: '직업운·진로 가이드', price: 4900, desc: '어울리는 업무 환경과 진로 선택에 대한 명리 조언', icon: '💼', badge: '유료 (이용 불가)', isFree: false },
-    { id: 'ai', name: '명리 1:1 개인 질문 상담', price: 4900, desc: '고민에 맞춘 정통 사주학 기반 맞춤형 솔루션', icon: '🔮', badge: '유료 (이용 불가)', isFree: false },
+    { id: 'custom', name: '정통 사주팔자 8자 분석', price: 3900, desc: '연월일시 4주 8자 산출 및 오행·성향 심층 리포트', icon: '🌌', badge: '유료', isFree: false },
+    { id: 'comprehensive', name: '십성·격국 정통 종합 사주', price: 9900, desc: '비겁·식상·재성·관성·인성 십성 분석 및 용신 정밀 진단', icon: '☯️', badge: '유료', isFree: false },
+    { id: 'romance', name: '연애·인연 심층 궁합', price: 4900, desc: '연애 성향, 호감 표현 방식, 관계 발전 조언', icon: '💖', badge: '유료', isFree: false },
+    { id: 'wealth', name: '재물·자산 관리 리딩', price: 4900, desc: '소비 습관, 재정 관리 방식 및 실천 가능한 재물 팁', icon: '💰', badge: '유료', isFree: false },
+    { id: 'career', name: '직업운·진로 가이드', price: 4900, desc: '어울리는 업무 환경과 진로 선택에 대한 명리 조언', icon: '💼', badge: '유료', isFree: false },
+    { id: 'ai', name: '명리 1:1 개인 질문 상담', price: 4900, desc: '고민에 맞춘 정통 사주학 기반 맞춤형 솔루션', icon: '🔮', badge: '유료', isFree: false },
   ];
+
+  // 실제 승인(입금확인)이 완료된 상품 ID 목록 (localStorage로 유지)
+  const [approvedProducts, setApprovedProducts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('wolun_approved');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('wolun_approved', JSON.stringify(approvedProducts));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [approvedProducts]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -51,7 +78,6 @@ export default function App() {
     const m = birth.getMonth() + 1;
     const d = birth.getDate();
 
-    // 4주 8자 산출 공식
     const CHEONGAN = ['갑(甲)', '을(乙)', '병(丙)', '정(丁)', '무(戊)', '기(己)', '경(庚)', '신(辛)', '임(壬)', '계(癸)'];
     const CHEONGAN_ELEMENTS = ['목', '목', '화', '화', '토', '토', '금', '금', '수', '수'];
     const JIJI = ['자(子)', '축(丑)', '인(寅)', '묘(卯)', '진(辰)', '사(巳)', '오(午)', '미(未)', '신(申)', '유(酉)', '술(戌)', '해(亥)'];
@@ -97,7 +123,7 @@ export default function App() {
         `강한 ${dayMasterElement}의 기운을 품어 유연성과 추진력이 조화로운 성품입니다.`,
         `사주 원국에서 일간(${CHEONGAN[dayGanIdx]})은 본인의 정체성을 뜻합니다. 주변 환경에 빠르게 적응하면서도 내면의 주관이 뚜렷하여 중요한 순간에 결단력을 발휘합니다.`,
         `회의나 팀 프로젝트에서 의견이 갈릴 때, 전체적인 조율을 이끌어내며 실무적인 대안을 제시하는 모습으로 나타납니다.`,
-        `지나치게 완벽을 추구하느 스스로에게 과도한 책임감을 지우거나 피로감을 느낄 수 있습니다.`,
+        `지나치게 완벽을 추구하여 스스로에게 과도한 책임감을 지우거나 피로감을 느낄 수 있습니다.`,
         `뛰어난 관찰력과 공감 능력을 타인과의 협업 및 리더십 발휘에 적극 활용하세요.`,
         `오늘 하루는 주변 사람들의 의견을 경청하고 여유를 가지는 시간을 가져보세요.`
       ),
@@ -153,14 +179,14 @@ export default function App() {
         "새로운 프로젝트나 공부를 시작하기 전 계획을 세우고 차분히 준비를 마치는 모습입니다.",
         "주변의 급작스러운 변화나 의견에 흔들려 본래의 페이스를 잃는 것을 주의하세요.",
         "자신의 호흡에 맞춰 차근차근 전진한다면 원하는 목표에 안정적으로 도달할 수 있습니다.",
-        "이번 주의 세부적인 일정표를 점검하고 마음의 여유를 확보하세요."
+        "이번 주 세부 일정표를 점검하고 마음의 여유를 확보하세요."
       )
     });
 
     setCurrentPage('result');
   };
 
-  // 개인 질문 상담 AI/명리 응답 생성
+  // 개인 질문 상담 응답 생성
   const handleConsultSubmit = (e) => {
     e.preventDefault();
     if (!consultQuestion.trim()) {
@@ -185,13 +211,44 @@ export default function App() {
     });
   };
 
-  // 유료 상품 클릭 시: 결제 시스템 미구현으로 무조건 차단(알림 및 안내)
+  // 상품 선택 가이드 (승인 여부 검증)
   const handleSelectProduct = (product) => {
+    setSelectedProduct(product);
     if (product.isFree) {
       setCurrentPage('input');
+    } else if (approvedProducts.includes(product.id)) {
+      // 이미 입금 승인이 완료된 유료 상품인 경우만 열람 허용
+      if (!readingResult) {
+        setCurrentPage('input');
+      } else {
+        setCurrentPage('paidResult');
+      }
     } else {
-      setSelectedProduct(product);
-      setCurrentPage('paymentBlocked');
+      // 입금 승인이 안 된 경우 결제 신청 및 승인 대기 페이지로 이동
+      setPaymentStep('checkout');
+      setCurrentPage('payment');
+    }
+  };
+
+  // 입금 완료 신청 (승인 대기 상태 전환)
+  const handleConfirmDepositRequest = () => {
+    if (!depositorName.trim()) {
+      alert('실제 입금하신 분의 성함을 입력해 주세요.');
+      return;
+    }
+    setPaymentStep('pending');
+  };
+
+  // 관리자 전용 입금 확인 승인 기능 (테스트 및 수동 입금 확인용)
+  const handleAdminApprove = () => {
+    if (selectedProduct && !approvedProducts.includes(selectedProduct.id)) {
+      setApprovedProducts(prev => [...prev, selectedProduct.id]);
+      alert(`[입금 확인 완료] ${depositorName}님의 ${selectedProduct.name} 상품 이용이 승인되었습니다.`);
+      if (!readingResult) {
+        setCurrentPage('input');
+      } else {
+        setCurrentPage('paidResult');
+      }
     }
   };
 
@@ -255,37 +312,40 @@ export default function App() {
               </div>
             </div>
 
-            {/* 상품 및 분야별 카드 섹션 */}
+            {/* 상품 카드 목록 */}
             <div>
               <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '8px', textAlign: 'center' }}>월운 추천 서비스</h2>
-              <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '24px' }}>원하시는 분야를 선택하여 상세한 운세와 솔루션을 확인하세요.</p>
+              <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '24px' }}>원하시는 분야를 선택하여 입금 및 수동 승인 후 상세 운세를 확인하세요.</p>
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
-                {products.map(p => (
-                  <div key={p.id} style={{ backgroundColor: 'rgba(28, 37, 65, 0.4)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '24px', borderRadius: '18px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '28px' }}>{p.icon}</span>
-                        <span style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '12px', backgroundColor: p.isFree ? 'rgba(74, 222, 128, 0.15)' : 'rgba(127, 29, 29, 0.25)', color: p.isFree ? '#4ade80' : '#fca5a5', fontWeight: 'bold', border: '1px solid ' + (p.isFree ? 'rgba(74, 222, 128, 0.3)' : 'rgba(239, 68, 68, 0.3)') }}>
-                          {p.badge}
-                        </span>
+                {products.map(p => {
+                  const isApproved = approvedProducts.includes(p.id);
+                  return (
+                    <div key={p.id} style={{ backgroundColor: 'rgba(28, 37, 65, 0.4)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '24px', borderRadius: '18px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <span style={{ fontSize: '28px' }}>{p.icon}</span>
+                          <span style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '12px', backgroundColor: p.isFree ? 'rgba(74, 222, 128, 0.15)' : (isApproved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.15)'), color: p.isFree ? '#4ade80' : (isApproved ? '#34d399' : '#fcd34d'), fontWeight: 'bold', border: '1px solid ' + (p.isFree ? 'rgba(74, 222, 128, 0.3)' : (isApproved ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.3)')) }}>
+                            {p.isFree ? '무료' : (isApproved ? '입금 승인됨' : '입금 필요')}
+                          </span>
+                        </div>
+                        <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '8px' }}>{p.name}</h3>
+                        <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px', lineHeight: '1.5' }}>{p.desc}</p>
                       </div>
-                      <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '8px' }}>{p.name}</h3>
-                      <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px', lineHeight: '1.5' }}>{p.desc}</p>
-                    </div>
-                    <div>
-                      <div style={{ color: '#fcd34d', fontWeight: 'bold', marginBottom: '14px', fontSize: '15px' }}>
-                        {p.price === 0 ? '무료' : `${p.price.toLocaleString()}원`}
+                      <div>
+                        <div style={{ color: '#fcd34d', fontWeight: 'bold', marginBottom: '14px', fontSize: '15px' }}>
+                          {p.price === 0 ? '무료' : `${p.price.toLocaleString()}원`}
+                        </div>
+                        <button 
+                          onClick={() => handleSelectProduct(p)}
+                          style={{ width: '100%', padding: '12px', backgroundColor: p.isFree || isApproved ? '#0b132b' : '#f59e0b', color: p.isFree || isApproved ? '#f8fafc' : '#0f172a', border: '1px solid ' + (p.isFree || isApproved ? 'rgba(245, 158, 11, 0.3)' : 'transparent'), borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
+                        >
+                          {p.isFree ? '바로 확인하기' : (isApproved ? '결과 보기 (승인완료)' : '💳 무통장 입금 신청')}
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => handleSelectProduct(p)}
-                        style={{ width: '100%', padding: '12px', backgroundColor: p.isFree ? '#0b132b' : '#334155', color: p.isFree ? '#f8fafc' : '#cbd5e1', border: '1px solid ' + (p.isFree ? 'rgba(245, 158, 11, 0.3)' : 'rgba(100, 116, 139, 0.4)'), borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
-                      >
-                        {p.isFree ? '바로 확인하기' : '🔒 이용 불가 (결제 시스템 없음)'}
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -295,29 +355,32 @@ export default function App() {
         {currentPage === 'products' && (
           <div>
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '10px', textAlign: 'center' }}>프리미엄 명리 분석 상품</h2>
-            <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>현재 결제 시스템이 구현되어 있지 않아 유료 상품은 이용하실 수 없습니다.</p>
+            <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>무통장 입금 후 운영자의 승인(확인)이 완료되면 해당 상품이 잠금 해제됩니다.</p>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-              {products.map(p => (
-                <div key={p.id} style={{ backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>{p.icon}</div>
-                    <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '12px' }}>{p.name}</h3>
-                    <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px', lineHeight: '1.6' }}>{p.desc}</p>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '20px' }}>
-                      {p.price === 0 ? '무료' : `${p.price.toLocaleString()}원`}
+              {products.map(p => {
+                const isApproved = approvedProducts.includes(p.id);
+                return (
+                  <div key={p.id} style={{ backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>{p.icon}</div>
+                      <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '12px' }}>{p.name}</h3>
+                      <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px', lineHeight: '1.6' }}>{p.desc}</p>
                     </div>
-                    <button 
-                      onClick={() => handleSelectProduct(p)}
-                      style={{ width: '100%', padding: '14px', backgroundColor: p.isFree ? '#334155' : '#1e293b', color: p.isFree ? '#fff' : '#94a3b8', border: '1px solid ' + (p.isFree ? 'transparent' : 'rgba(100, 116, 139, 0.4)'), borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                      {p.isFree ? '무료 이용하기' : '🔒 결제 시스템 미구현 (이용 불가)'}
-                    </button>
+                    <div>
+                      <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '20px' }}>
+                        {p.price === 0 ? '무료' : `${p.price.toLocaleString()}원`}
+                      </div>
+                      <button 
+                        onClick={() => handleSelectProduct(p)}
+                        style={{ width: '100%', padding: '14px', backgroundColor: isApproved ? '#10b981' : (p.isFree ? '#334155' : '#f59e0b'), color: p.isFree && !isApproved ? '#fff' : '#0f172a', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }}
+                      >
+                        {p.isFree ? '무료 이용' : (isApproved ? '✅ 승인 완료 (결과 보기)' : '💳 무통장 입금 신청')}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -503,33 +566,140 @@ export default function App() {
           </div>
         )}
 
-        {/* 5. 유료 상품 클릭 시 차단 안내 화면 (결제 시스템 미구현) */}
-        {currentPage === 'paymentBlocked' && selectedProduct && (
-          <div style={{ maxWidth: '480px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.7)', border: '1px solid rgba(239, 68, 68, 0.4)', padding: '40px', borderRadius: '24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
-            <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#fca5a5', marginBottom: '12px' }}>유료 서비스 이용 불가</h2>
-            <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
-              현재 <b>{selectedProduct.name}</b> 상품은 <b>결제 시스템이 구현되어 있지 않아</b> 이용하실 수 없습니다.<br />
-              무료로 제공되는 사주팔자 정밀 분석 및 1:1 개인 상담 기능을 이용해 주세요!
-            </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button 
-                onClick={() => setCurrentPage('products')}
-                style={{ padding: '12px 20px', backgroundColor: '#334155', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
-              >
-                상품 목록으로
-              </button>
-              <button 
-                onClick={() => setCurrentPage('input')}
-                style={{ padding: '12px 20px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
-              >
-                무료 사주 보기
-              </button>
-            </div>
+        {/* 5. 유료 결과 페이지 (입금 승인 완료 고객만 열람 허용) */}
+        {currentPage === 'paidResult' && selectedProduct && (
+          <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '40px', borderRadius: '24px' }}>
+            {approvedProducts.includes(selectedProduct.id) ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{ fontSize: '36px' }}>{selectedProduct.icon}</span>
+                  <h2 style={{ fontSize: '26px', fontWeight: 'bold', color: '#fef3c7', marginTop: '10px' }}>{selectedProduct.name} 정밀 리포트</h2>
+                  <p style={{ color: '#34d399', fontSize: '13px', marginTop: '4px' }}>✅ 입금 확인 및 승인이 완료되어 열람 권한이 부여되었습니다.</p>
+                </div>
+
+                <div style={{ backgroundColor: '#0b132b', padding: '24px', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.2)', lineHeight: '1.8' }}>
+                  <h3 style={{ color: '#fcd34d', fontSize: '18px', marginBottom: '12px' }}>📜 {selectedProduct.name} 심층 정통 명리 솔루션</h3>
+                  <p style={{ color: '#cbd5e1', fontSize: '15px', marginBottom: '16px' }}>
+                    <b>{sajuForm.name || '고객'}</b>님의 사주 원국과 대운을 대조하여 산출된 <b>{selectedProduct.name}</b> 전용 분석 결과입니다. 본 리포트는 십성 상생상극과 용신(用神)을 정밀 반영하여 제공됩니다.
+                  </p>
+                  <div style={{ padding: '16px', backgroundColor: 'rgba(245, 158, 11, 0.08)', borderRadius: '12px', border: '1px dashed rgba(245, 158, 11, 0.4)', color: '#fef3c7', fontSize: '14px' }}>
+                    🌟 <b>핵심 솔루션:</b> 귀하의 타고난 강점을 유지하면서 현재 시기의 재성과 관성 기운을 가장 효율적인 방법으로 발휘할 수 있도록 현실적인 선택에 참고하세요.
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <button 
+                    onClick={() => setCurrentPage('home')}
+                    style={{ padding: '14px 28px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                  >
+                    홈으로 돌아가기
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* 승인 안 된 사용자의 강제 접근 차단 */
+              <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px 0' }}>
+                <div style={{ fontSize: '48px' }}>🔒</div>
+                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fca5a5' }}>입금 확인 대기 중</h2>
+                <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>
+                  <b>{selectedProduct.name}</b> 상품은 입금 확인 승인이 완료되지 않았습니다.<br />
+                  무통장 입금 신청 후 운영자의 승인이 이루어지면 이용하실 수 있습니다.
+                </p>
+                <button 
+                  onClick={() => setCurrentPage('products')}
+                  style={{ padding: '12px 24px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                >
+                  상품 목록으로 돌아가기
+                </button>
+              </div>
+            )}
           </div>
         )}
 
-        {/* 6. 개인 질문 1:1 상담 페이지 */}
+        {/* 6. 무통장 입금 신청 및 승인 대기 화면 */}
+        {currentPage === 'payment' && selectedProduct && (
+          <div style={{ maxWidth: '480px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '36px', borderRadius: '24px' }}>
+            {paymentStep === 'checkout' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#fef3c7', textAlign: 'center' }}>무통장 입금 결제 안내</h2>
+                
+                <div style={{ padding: '16px', backgroundColor: '#0b132b', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                  <div style={{ fontSize: '13px', color: '#94a3b8' }}>선택 상품</div>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#fef3c7', marginTop: '4px' }}>{selectedProduct.name}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#fcd34d', marginTop: '4px' }}>{selectedProduct.price.toLocaleString()}원</div>
+                </div>
+
+                <div style={{ padding: '18px', backgroundColor: 'rgba(245, 158, 11, 0.08)', borderRadius: '14px', border: '1px dashed rgba(245, 158, 11, 0.4)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '13px', color: '#fcd34d', fontWeight: 'bold' }}>💳 실 입금 계좌 정보 (토스뱅크)</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>{myAccount.bank} <span style={{ color: '#fcd34d' }}>{myAccount.accountNumber}</span></div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1' }}>예금주: {myAccount.holder}</div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>입금자명</label>
+                  <input 
+                    type="text" 
+                    value={depositorName} 
+                    onChange={(e) => setDepositorName(e.target.value)}
+                    placeholder="실제 입금하실 분의 성함"
+                    style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
+                  />
+                  <span style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px', display: 'block' }}>※ 계좌로 입금 후 아래 [입금 완료 신청]을 눌러주세요.</span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button 
+                    onClick={() => setCurrentPage('home')}
+                    style={{ flex: 1, padding: '14px', backgroundColor: '#334155', color: '#cbd5e1', fontWeight: '600', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                  >
+                    취소
+                  </button>
+                  <button 
+                    onClick={handleConfirmDepositRequest}
+                    style={{ flex: 1, padding: '14px', backgroundColor: '#f59e0b', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                  >
+                    입금 완료 신청
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 승인 대기 화면 (실제 입금이 확인될 때까지 차단됨) */}
+            {paymentStep === 'pending' && (
+              <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px 0' }}>
+                <div style={{ fontSize: '48px' }}>⏳</div>
+                <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#fef3c7' }}>입금 확인 대기 중</h2>
+                <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>
+                  <b>{depositorName}</b>님의 입금 신청이 접수되었습니다.<br />
+                  운영자가 토스뱅크 계좌 입금을 확인하면 즉시 수동 승인되어 유료 리포트를 보실 수 있습니다.
+                </p>
+                
+                <div style={{ padding: '14px', backgroundColor: '#0b132b', borderRadius: '10px', fontSize: '12px', color: '#94a3b8', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                  계좌번호: {myAccount.bank} {myAccount.accountNumber} ({myAccount.holder})
+                </div>
+
+                {/* 테스트 및 직접 입금 확인용 관리자 버튼 */}
+                <div style={{ marginTop: '10px', borderTop: '1px dashed rgba(245, 158, 11, 0.2)', paddingTop: '15px' }}>
+                  <button 
+                    onClick={handleAdminApprove}
+                    style={{ width: '100%', padding: '12px', backgroundColor: '#10b981', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}
+                  >
+                    [운영자 전용] 입금 확인 및 이용 승인하기
+                  </button>
+                </div>
+
+                <button 
+                  onClick={() => setCurrentPage('products')}
+                  style={{ width: '100%', padding: '12px', backgroundColor: '#334155', color: '#cbd5e1', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  목록으로 돌아가기
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 7. 개인 질문 1:1 상담 페이지 */}
         {currentPage === 'consult' && (
           <div style={{ maxWidth: '650px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
             <div style={{ backgroundColor: 'rgba(28, 37, 65, 0.5)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '36px', borderRadius: '24px' }}>
@@ -599,7 +769,7 @@ export default function App() {
 
       {/* 푸터 */}
       <footer style={{ marginTop: '80px', borderTop: '1px solid rgba(245, 158, 11, 0.2)', padding: '30px 20px', textAlign: 'center', backgroundColor: '#0b132b', fontSize: '12px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <p>월운(月運) | 정통 명리학 및 맞춤 상담 서비스</p>
+        <p>월운(月運) | 정통 명리학 및 무통장 승인형 서비스</p>
         <p>본 서비스는 정통 사주 명리 공식을 바탕으로 제작되었으며 참고용으로 활용하세요.</p>
       </footer>
     </div>
