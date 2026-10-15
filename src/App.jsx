@@ -37,7 +37,7 @@ export default function App() {
     { id: 'ai', name: '명리 1:1 개인 질문 상담', price: 4900, desc: '고민에 맞춘 정통 사주학 기반 맞춤형 솔루션', icon: '🔮', badge: '유료', isFree: false },
   ];
 
-  // 승인된 상품 ID 목록 (localStorage 연동)
+  // 승인된 상품 ID 목록 (기본값을 빈 배열로 두어 유료 상품이 기본적으로 미결제 상태가 되도록 설정)
   const [approvedProducts, setApprovedProducts] = useState(() => {
     try {
       const saved = localStorage.getItem('wolun_approved');
@@ -91,21 +91,10 @@ export default function App() {
     const dayGanIdx = (dayBase + 9) % 10;
     const dayJiIdx = (dayBase + 1) % 12;
 
-    // 12지지 출생 시간에 따른 시주(時柱) 지지 인덱스 매핑
     const timeJiMap = {
       unknown: 0,
-      ja: 0,   // 자시 (23:00~00:59)
-      chuk: 1, // 축시 (01:00~02:59)
-      in: 2,   // 인시 (03:00~04:59)
-      myo: 3,  // 묘시 (05:00~06:59)
-      jin: 4,  // 진시 (07:00~08:59)
-      sa: 5,   // 사시 (09:00~10:59)
-      o: 6,    // 오시 (11:00~12:59)
-      mi: 7,   // 미시 (13:00~14:59)
-      shin: 8, // 신시 (15:00~16:59)
-      yu: 9,   // 유시 (17:00~18:59)
-      sul: 10, // 술시 (19:00~20:59)
-      hae: 11  // 해시 (21:00~22:59)
+      ja: 0, chuk: 1, in: 2, myo: 3, jin: 4, sa: 5,
+      o: 6, mi: 7, shin: 8, yu: 9, sul: 10, hae: 11
     };
 
     const selectedTimeJiIdx = timeJiMap[sajuForm.birthTime] !== undefined ? timeJiMap[sajuForm.birthTime] : 0;
@@ -384,7 +373,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 3. 사주 정보 입력 폼 (출생 시간 12지지 세분화 적용) */}
+        {/* 3. 사주 정보 입력 폼 */}
         {currentPage === 'input' && (
           <div style={{ maxWidth: '550px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.5)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '40px', borderRadius: '24px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '8px', textAlign: 'center' }}>사주팔자 정보 입력</h2>
@@ -480,7 +469,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 4. 무료 명리 종합 결과 페이지 (전문적 해석) */}
+        {/* 4. 무료 명리 종합 결과 페이지 */}
         {currentPage === 'result' && readingResult && (
           <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
             
@@ -525,7 +514,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* 전문 6단계 구조화 상세 해석 카드 렌더링 */}
+            {/* 6단계 구조화 카드 */}
             {[
               { key: 'personality', title: '🌳 타고난 사주 원국 및 본질적 성향', data: readingResult.personality },
               { key: 'romance', title: '💖 연애 성향 및 깊은 인연의 발전', data: readingResult.romance },
@@ -574,7 +563,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 5. 유료 결과 페이지 (승인 완료 고객만 열람 허용) */}
+        {/* 5. 유료 결과 페이지 */}
         {currentPage === 'paidResult' && selectedProduct && (
           <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '40px', borderRadius: '24px' }}>
             {approvedProducts.includes(selectedProduct.id) ? (
