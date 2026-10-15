@@ -37,11 +37,18 @@ export default function App() {
     { id: 'ai', name: '명리 1:1 개인 질문 상담', price: 4900, desc: '고민에 맞춘 정통 사주학 기반 맞춤형 솔루션', icon: '🔮', badge: '유료', isFree: false },
   ];
 
-  // 승인된 상품 ID 목록 (기본값을 빈 배열로 두어 유료 상품이 기본적으로 미결제 상태가 되도록 설정)
+  // 승인된 상품 ID 목록 (기존 localStorage의 'custom' 유료 승인 기록을 강제로 제외/초기화)
   const [approvedProducts, setApprovedProducts] = useState(() => {
     try {
       const saved = localStorage.getItem('wolun_approved');
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // 'custom' 상품을 강제로 삭제하여 승인 해제
+        const cleaned = parsed.filter(id => id !== 'custom');
+        localStorage.setItem('wolun_approved', JSON.stringify(cleaned));
+        return cleaned;
+      }
+      return [];
     } catch {
       return [];
     }
