@@ -8,18 +8,18 @@ export default function App() {
     name: '',
     birthDate: '',
     calendarType: 'solar',
-    birthTime: 'unknown',
+    birthTime: 'unknown', // 12지지 시간대
     question: ''
   });
   const [validationError, setValidationError] = useState('');
-  const [paymentStep, setPaymentStep] = useState('checkout'); // 'checkout', 'pending'
+  const [paymentStep, setPaymentStep] = useState('checkout');
   const [readingResult, setReadingResult] = useState(null);
   
   // 개인 질문 상담 상태
   const [consultQuestion, setConsultQuestion] = useState('');
   const [consultResult, setConsultResult] = useState(null);
 
-  // 운영자 실계좌 정보
+  // 운영자 실계좌 정보 (토스뱅크 1002-1526-1128 송시우)
   const myAccount = {
     bank: '토스뱅크',
     accountNumber: '1002-1526-1128',
@@ -37,7 +37,7 @@ export default function App() {
     { id: 'ai', name: '명리 1:1 개인 질문 상담', price: 4900, desc: '고민에 맞춘 정통 사주학 기반 맞춤형 솔루션', icon: '🔮', badge: '유료', isFree: false },
   ];
 
-  // 실제 승인(입금확인)이 완료된 상품 ID 목록 (localStorage로 유지)
+  // 승인된 상품 ID 목록 (localStorage 연동)
   const [approvedProducts, setApprovedProducts] = useState(() => {
     try {
       const saved = localStorage.getItem('wolun_approved');
@@ -60,7 +60,7 @@ export default function App() {
     setSajuForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // 정통 사주팔자 산출 및 6단계 구조화 리포트 생성 엔진
+  // 정통 사주팔자 산출 및 전문 6단계 구조화 리포트 생성 엔진
   const handleSajuSubmit = (e) => {
     e.preventDefault();
     if (!sajuForm.name.trim()) {
@@ -91,23 +91,37 @@ export default function App() {
     const dayGanIdx = (dayBase + 9) % 10;
     const dayJiIdx = (dayBase + 1) % 12;
 
-    let timeJiIdx = 0;
-    if (sajuForm.birthTime === 'morning') timeJiIdx = 2;
-    else if (sajuForm.birthTime === 'afternoon') timeJiIdx = 6;
-    else if (sajuForm.birthTime === 'night') timeJiIdx = 10;
-    const timeGanIdx = ((dayGanIdx % 5) * 2 + timeJiIdx) % 10;
+    // 12지지 출생 시간에 따른 시주(時柱) 지지 인덱스 매핑
+    const timeJiMap = {
+      unknown: 0,
+      ja: 0,   // 자시 (23:00~00:59)
+      chuk: 1, // 축시 (01:00~02:59)
+      in: 2,   // 인시 (03:00~04:59)
+      myo: 3,  // 묘시 (05:00~06:59)
+      jin: 4,  // 진시 (07:00~08:59)
+      sa: 5,   // 사시 (09:00~10:59)
+      o: 6,    // 오시 (11:00~12:59)
+      mi: 7,   // 미시 (13:00~14:59)
+      shin: 8, // 신시 (15:00~16:59)
+      yu: 9,   // 유시 (17:00~18:59)
+      sul: 10, // 술시 (19:00~20:59)
+      hae: 11  // 해시 (21:00~22:59)
+    };
+
+    const selectedTimeJiIdx = timeJiMap[sajuForm.birthTime] !== undefined ? timeJiMap[sajuForm.birthTime] : 0;
+    const timeGanIdx = ((dayGanIdx % 5) * 2 + selectedTimeJiIdx) % 10;
 
     const sajuPillar = {
       year: `${CHEONGAN[yearGanIdx]}${JIJI[yearJiIdx]}`,
       month: `${CHEONGAN[monthGanIdx]}${JIJI[monthJiIdx]}`,
       day: `${CHEONGAN[dayGanIdx]}${JIJI[dayJiIdx]}`,
-      time: `${CHEONGAN[timeGanIdx]}${JIJI[timeJiIdx]}`,
+      time: sajuForm.birthTime === 'unknown' ? '미상 (시간 미입력)' : `${CHEONGAN[timeGanIdx]}${JIJI[selectedTimeJiIdx]}`,
     };
 
     const dayMasterElement = CHEONGAN_ELEMENTS[dayGanIdx];
     const elementCounts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
     [yearGanIdx, monthGanIdx, dayGanIdx, timeGanIdx].forEach(idx => elementCounts[CHEONGAN_ELEMENTS[idx]]++);
-    [yearJiIdx, monthJiIdx, dayJiIdx, timeJiIdx].forEach(idx => elementCounts[JIJI_ELEMENTS[idx]]++);
+    [yearJiIdx, monthJiIdx, dayJiIdx, selectedTimeJiIdx].forEach(idx => elementCounts[JIJI_ELEMENTS[idx]]++);
 
     const generateStructuredContent = (title, summary, detail, example, caution, positive, action) => ({
       title, summary, detail, example, caution, positive, action
@@ -116,70 +130,70 @@ export default function App() {
     setReadingResult({
       name: sajuForm.name,
       sajuPillar,
-      dayMaster: `${CHEONGAN[dayGanIdx]} (${dayMasterElement}기운 일간)`,
+      dayMaster: `${CHEONGAN[dayGanIdx]} (${dayMasterElement}기운 일간 - 본원)`,
       elementCounts,
       personality: generateStructuredContent(
-        "타고난 성향 및 행동 패턴",
-        `강한 ${dayMasterElement}의 기운을 품어 유연성과 추진력이 조화로운 성품입니다.`,
-        `사주 원국에서 일간(${CHEONGAN[dayGanIdx]})은 본인의 정체성을 뜻합니다. 주변 환경에 빠르게 적응하면서도 내면의 주관이 뚜렷하여 중요한 순간에 결단력을 발휘합니다.`,
-        `회의나 팀 프로젝트에서 의견이 갈릴 때, 전체적인 조율을 이끌어내며 실무적인 대안을 제시하는 모습으로 나타납니다.`,
-        `지나치게 완벽을 추구하여 스스로에게 과도한 책임감을 지우거나 피로감을 느낄 수 있습니다.`,
-        `뛰어난 관찰력과 공감 능력을 타인과의 협업 및 리더십 발휘에 적극 활용하세요.`,
-        `오늘 하루는 주변 사람들의 의견을 경청하고 여유를 가지는 시간을 가져보세요.`
+        "타고난 사주 원국 및 본질적 성향",
+        `일간 ${CHEONGAN[dayGanIdx]}을 중심으로 ${dayMasterElement}의 기운이 조화롭게 발현되어 통찰력과 결단력을 겸비한 성품입니다.`,
+        `사주 명리학에서 일간(日干)은 본인의 영혼과 근본 자아를 상징합니다. 원국 내 오행의 유기적인 소통으로 인해 타인의 감정을 빠르게 캐치하면서도, 내면의 주관과 원칙이 매우 확고한 구조를 지니고 있습니다. 위기 상황에서 냉철하게 판세를 읽고 실마리를 찾아내는 잠재력이 뛰어납니다.`,
+        `조직이나 프로젝트에서 의견이 대립할 때, 감정적으로 치우치지 않고 객관적인 데이터를 바탕으로 해결책을 제시하여 신뢰를 얻는 모습으로 나타납니다.`,
+        `완벽주의적 성향이 강해 스스로에게 지나친 기준을 부과하거나, 마음속 고민을 홀로 삭히며 에너지를 소모할 수 있으니 주의가 필요합니다.`,
+        `특유의 분석력과 공감 지능을 결합하여 리더로서의 입지를 다지거나 전문 분야에서 독보적인 성취를 이루는 데 적극 활용하세요.`,
+        `오늘 하루는 모든 것을 혼자 해결하려 하지 말고, 믿을 만한 사람과 생각을 공유하며 마음의 짐을 내려놓아 보세요.`
       ),
       romance: generateStructuredContent(
-        "연애 성향 및 인연 발전",
-        "진실된 교감을 중시하며, 상대방의 작은 배려에 깊게 감동하는 따뜻한 연애 스타일입니다.",
-        "관계에서 신뢰와 안정감을 최우선으로 생각합니다. 감정을 쉽게 드러내기보다 마음속으로 깊이 생각한 뒤 다정한 언행으로 표현합니다.",
-        "상대방이 피곤할 때 무심하게 챙겨주는 음료수나 따뜻한 말 한마디로 큰 감동을 주는 상황입니다.",
-        "속마음을 오랫동안 숨기다가 오해가 쌓일 수 있으므로 솔직한 소통이 필요합니다.",
-        "진정성 있는 소통 방식을 활용해 상대방과 깊은 정서적 유대감을 형성할 수 있습니다.",
-        "마음에 품고 있는 감정이 있다면 따뜻한 메시지로 먼저 마음을 표현해 보세요."
+        "연애 성향 및 깊은 인연의 발전",
+        "진정성 있는 정서적 교감을 최우선으로 여기며, 한 사람에게 깊고 오래 스며드는 해바라기형 연애 스타일입니다.",
+        "명리적으로 재성(財星)과 관성(官星)의 조화 속에서 상대방을 향한 책임감과 배려가 깊게 작용합니다. 가벼운 만남보다는 서로의 가치관을 존중하고 정신적으로 성장을 도모할 수 있는 깊은 관계를 추구합니다. 표현이 서툴러도 행동과 진심으로 마음을 증명합니다.",
+        "상대방이 지쳐있을 때 말없이 따뜻한 차를 건네거나, 세심하게 일정을 조율해 주는 등 묵묵한 내조와 헌신으로 감동을 주는 상황입니다.",
+        "속마음을 오랫동안 표현하지 않고 혼자 참다가 한 번에 감정이 폭발하거나 거리를 둘 수 있으므로 정기적인 대화가 필수적입니다.",
+        "진솔한 언어로 감정을 표현하는 습관을 들인다면, 파트너와 평생을 의지할 수 있는 단단한 유대 관계를 구축할 수 있습니다.",
+        "오늘 연인이나 호감 가는 분에게 따뜻한 안부와 함께 고마운 마음을 솔직하게 표현해 보세요."
       ),
       wealth: generateStructuredContent(
-        "재물운 및 자산 관리 팁",
-        "계획성과 절제력을 바탕으로 자산을 안정적으로 축적해 나가는 구조입니다.",
-        "충동적인 소비보다는 미래의 가치를 고려하여 지출을 통제하는 능력이 탁월합니다. 돈을 다루는 감각이 신중합니다.",
-        "필요한 물품의 가격과 품질을 꼼꼼히 비교한 뒤 합리적으로 구매를 결정하는 모습입니다.",
-        "지나치게 보수적인 자금 운용으로 인해 기회를 놓치거나 고민이 길어질 수 있습니다.",
-        "안정적인 저축과 함께 가치 있는 자기계발이나 장기 자산 배분에 관심을 가져보세요.",
-        "이번 달 고정 지출을 점검하고 소액이라도 저축 자동이체를 설정해 보세요."
+        "재물운 및 실질적 자산 관리 방안",
+        "철저한 계획성과 리스크 관리 능력을 바탕으로 재정을 안정적으로 증식해 나가는 십성 구조입니다.",
+        "재성(財星)의 흐름이 견고하여 충동적인 소비나 투기성 자금 운용보다는, 장기적인 가치와 안정성을 중시합니다. 돈을 다루는 감각이 신중하며, 자산을 체계적으로 분산하여 관리하는 탁월한 본능을 지니고 있습니다.",
+        "필요한 지출과 불필요한 소비를 냉정하게 구분하고, 할인 혜택이나 투자 포트폴리오를 꼼꼼히 비교하여 합리적으로 결정을 내리는 모습입니다.",
+        "지나치게 보수적인 태도로 인해 다가온 좋은 기회를 망설이다가 놓치거나, 시기를 놓쳐 고민이 길어질 수 있습니다.",
+        "안정적인 저축 기조를 유지하면서도, 시대 흐름에 맞는 유망한 자기계발이나 장기 자산 배분에 시야를 넓혀보세요.",
+        "이번 달 고정 지출 항목을 세밀하게 점검하고, 소액이라도 미래를 위한 자동 저축 플랜을 재정비해 보세요."
       ),
       career: generateStructuredContent(
-        "직업운 및 진로 가이드",
-        "책임감이 투철하고 분석력이 뛰어나 전문 분야나 기획 업무에서 두각을 나타냅니다.",
-        "주어진 과제를 체계적으로 분석하고 해결하는 능력이 뛰어납니다. 동료들과의 협업이 원만한 환경에서 능력이 배가됩니다.",
-        "복잡하게 얽힌 업무 프로세스를 깔끔하게 정리해 팀 전체의 효율을 높이는 상황입니다.",
-        "반복적이거나 자율성이 전혀 없는 환경에서는 쉽게 답답함을 느낄 수 있습니다.",
-        "자신의 아이디어를 제안할 수 있는 창의적이거나 전문적인 업무 환경을 선택하세요.",
-        "현재 진행 중인 업무나 공부에서 가장 중요한 우선순위 3가지를 정리해 보세요."
+        "직업운, 적성 및 진로 발전 가이드",
+        "책임감과 기획력이 뛰어나며, 전문적인 지식을 활용하는 분야나 독립적인 프로젝트에서 대성할 팔자입니다.",
+        "관성(官星)과 식상(食傷)의 유기적인 협조로 인해 주어진 과제를 분석하고 창의적으로 해결하는 능력이 탁월합니다. 단순 반복 업무보다는 본인의 권한과 자율성이 보장되는 환경에서 폭발적인 업무 성과를 발휘합니다.",
+        "복잡하게 얽힌 업무 프로세스를 도식화하고 핵심 문제점을 파악하여 팀 전체의 생산성을 극대화하는 상황입니다.",
+        "지나치게 틀에 박히거나 관료적인 조직 문화, 소통이 단절된 환경에서는 극심한 정신적 피로감과 정체기를 겪을 수 있습니다.",
+        "전문 자격증 취득, 기획·컨설팅, 기술 기반 비즈니스나 창의적 콘텐츠 제작 분야로 진로를 설정하면 큰 성공을 거둘 수 있습니다.",
+        "현재 진행 중인 프로젝트나 학업에서 가장 핵심적인 우선순위 3가지를 선정하여 집중력을 발휘해 보세요."
       ),
       relationships: generateStructuredContent(
-        "대인관계 및 소통 방법",
-        "주변 사람들에게 신뢰를 주는 진중한 태도로 원만한 인간관계를 유지합니다.",
-        "타인의 입장을 먼저 헤아리고 배려하기 때문에 주변에 마음을 터놓을 수 있는 좋은 인연들이 모입니다.",
-        "친구의 고민을 묵묵히 들어주며 현실적이고 따뜻한 조언을 건네는 모습입니다.",
-        "상대방의 부탁을 거절하지 못해 혼자서 스트레스를 떠안을 수 있습니다.",
-        "건강한 경계선을 설정하고 자신의 의사를 부드럽게 표현하는 연습을 해보세요.",
-        "오랫동안 연락하지 못한 지인에게 가벼운 안부 인사를 건네보세요."
+        "대인관계 및 지혜로운 소통 방법",
+        "신용과 의리를 최우선으로 여기며, 주변 사람들에게 깊은 안정감과 신뢰를 주는 품격 있는 인상입니다.",
+        "타인의 입장을 먼저 헤아리고 배려하는 덕성(德性)을 지니고 있어, 위기의 순간에 진가를 알아주는 귀인(貴人)과 든든한 동반자들이 자연스럽게 곁에 모이는 복을 지니고 있습니다.",
+        "친구의 힘든 사정을 묵묵히 들어주며 현실적이면서도 가슴 따뜻한 해결책을 조언해 주는 든든한 멘토 역할입니다.",
+        "주변의 부탁이나 거절하기 힘든 요구를 차마 뿌리치지 못해 혼자서 과도한 스트레스나 짐을 떠안는 경향이 있습니다.",
+        "건강한 심리적 경계선을 설정하고, 자신의 의사를 부드럽고 단호하게 표현하는 커뮤니케이션 기술을 연마해 보세요.",
+        "오랫동안 소원해졌던 고마운 지인이나 친구에게 가벼운 안부 메시지를 건네며 인연을 돈독히 해보세요."
       ),
       health: generateStructuredContent(
-        "건강 관련 생활 조언",
-        "활력 유지를 위해 규칙적인 수면과 스트레스 해소용 가벼운 산책이 큰 도움이 됩니다.",
-        "지속적인 집중으로 인해 어깨나 목 등에 긴장이 쌓이기 쉬우므로 주기적인 스트레칭이 필요합니다.",
-        "작업 중간에 일어나 가볍게 물을 마시거나 창밖을 바라보며 눈의 피로를 푸는 상황입니다.",
-        "피로가 누적되었음에도 일을 마무리하려 무리하게 버티는 습관은 피해야 합니다.",
-        "충분한 휴식과 수면을 최고의 자기관리로 여기는 태도를 가져보세요.",
-        "오늘 저녁 취침 전 스마트폰 사용을 줄이고 가벼운 명상이나 스트레칭을 해보세요."
+        "건강 유지 비결 및 신체 리듬 관리",
+        "신체 에너지를 효율적으로 관리하기 위해 규칙적인 수면 습관과 스트레스 이완 루틴이 절대적으로 필요합니다.",
+        "지속적인 두뇌 활동과 집중으로 인해 어깨, 목, 신경계에 긴장이 쉽게 누적될 수 있습니다. 오행의 균형을 맞추기 위해 자연과 가까이 지내며 심신을 정화하는 것이 명리적으로 매우 유리합니다.",
+        "작업 중간에 일어나 가볍게 심호흡을 하거나, 퇴근길 가벼운 산책을 통해 머리를 비우고 활력을 충전하는 모습입니다.",
+        "피로가 누적되었음에도 의지로만 버티며 휴식을 미루는 습관은 만성 피로를 유발할 수 있으므로 경계해야 합니다.",
+        "충분한 수면과 가벼운 유산소 운동을 최고의 보약으로 여기고, 일과 휴식의 밸런스를 엄격하게 지키세요.",
+        "오늘 저녁 취침 전에는 스마트폰 화면을 멀리하고 따뜻한 차와 함께 가벼운 스트레칭으로 숙면을 준비해 보세요."
       ),
       timing: generateStructuredContent(
-        "시기별 흐름 (오늘·이번 주·이번 달)",
-        "내실을 다지며 한 단계 도약하기 위한 준비와 기회가 공존하는 흐름입니다.",
-        "단기적인 성과에 조급해하기보다는 현재 진행 중인 일의 기초를 단단히 다지는 시기입니다. 노력한 만큼 결실이 서서히 나타납니다.",
-        "새로운 프로젝트나 공부를 시작하기 전 계획을 세우고 차분히 준비를 마치는 모습입니다.",
-        "주변의 급작스러운 변화나 의견에 흔들려 본래의 페이스를 잃는 것을 주의하세요.",
-        "자신의 호흡에 맞춰 차근차근 전진한다면 원하는 목표에 안정적으로 도달할 수 있습니다.",
-        "이번 주 세부 일정표를 점검하고 마음의 여유를 확보하세요."
+        "시기별 운세 흐름 (오늘·이번 주·대운의 방향)",
+        "과거의 노력이 결실을 맺고, 새로운 도약과 전환점을 맞이하는 매우 중요한 상승 국면입니다.",
+        "현재 시기적 흐름은 내실을 단단히 다지는 동시에 외부로 확장할 수 있는 기운이 공존하고 있습니다. 조급하게 서두르기보다 때를 기다려 실리를 취하면 큰 성과를 거둘 수 있습니다.",
+        "중요한 계약이나 결정을 앞두고 철저한 사전 조사와 검토를 거쳐 실수 없는 결과를 만들어내는 상황입니다.",
+        "주위의 급작스러운 소문이나 타인의 의견에 흔들려 본래의 중심을 잃거나 갈피를 잡지 못하는 것을 주의하세요.",
+        "자신만의 뚜렷한 호흡과 페이스를 유지하며 차근차근 전진한다면, 뜻하는 바를 온전히 이루어낼 수 있습니다.",
+        "이번 주 세부적인 일정과 목표를 다시 한번 점검하고 마음의 여유와 평정을 유지하세요."
       )
     });
 
@@ -197,59 +211,44 @@ export default function App() {
     const q = consultQuestion.trim();
     setConsultResult({
       question: q,
-      answerDirect: `질문하신 "${q}"에 대해, 현재 흐름 속에서 가장 중요한 핵심은 조급함을 내려놓고 본래의 중심을 지키는 것입니다.`,
-      situation: `제공해주신 상황을 다각도로 살펴보았을 때, 주변의 변수보다는 본인의 내면적인 기준과 준비 상태가 성과의 당락을 결정짓는 시점입니다.`,
-      sajuPerspective: `정통 명리학적 관점에서 볼 때, 현재 귀하의 일간 기운과 시기적 흐름은 새로운 전환점을 앞두고 에너지를 응축하는 단계에 해당합니다.`,
-      example: `마치 중요한 발표나 면접을 앞두고 막바지 점검을 꼼꼼히 하듯, 작은 디테일을 놓치지 않는 태도가 유리하게 작용합니다.`,
+      answerDirect: `질문하신 "${q}"에 대해, 정통 명리 원국과 현재의 시운(時運)을 대조한 결과 지금은 변화를 두려워하기보다 내실을 다지고 주도권을 잡아야 할 시점입니다.`,
+      situation: `제공해주신 고민의 맥락을 다각도로 진단해 볼 때, 외부의 불확실한 변수보다는 본인의 내면적인 확신과 구체적인 준비 상태가 성패를 가르는 결정적 요인입니다.`,
+      sajuPerspective: `정통 명리학적 관점에서 현재 귀하의 일간과 십성 흐름은 과도기를 지나 새로운 기회 영역으로 진입하는 에너지를 강하게 내뿜고 있습니다.`,
+      example: `마치 오랜 기간 준비해 온 무대나 시험을 앞두고 막바지 실력을 점검하듯, 세부적인 디테일을 보완하면 유리한 고지를 선점할 수 있습니다.`,
       actionSteps: [
-        "1단계: 현재 고민하고 있는 문제의 장점과 단점을 객관적으로 종이에 적어보세요.",
-        "2단계: 타인의 시선보다는 본인이 가장 중요하게 생각하는 가치관에 우선순위를 두세요.",
-        "3단계: 오늘 하루는 무리한 결정보다 생각을 정리하고 충분한 휴식을 취하세요."
+        "1단계: 현재 겪고 있는 문제의 원인과 장단기 대안을 백지에 객관적으로 적어보세요.",
+        "2단계: 타인의 시선이나 주변 압박에서 벗어나 본인이 가장 가치 있게 여기는 선택지에 집중하세요.",
+        "3단계: 오늘 하루는 성급한 결정을 유보하고 마인드 컨트롤과 충분한 휴식으로 컨디션을 회복하세요."
       ],
-      caution: `지나친 걱정이나 단정적인 생각은 불필요한 불안을 유발할 수 있으므로 신중하게 한 걸음씩 나아가세요.`,
-      closing: `귀하께서는 충분히 현명하게 이 시기를 헤쳐나갈 역량을 지니고 계십니다. 따뜻한 응원을 보냅니다.`
+      caution: `지나친 염려나 최악의 상황에 대한 가정은 불필요한 에너지 낭비를 초래하므로 긍정적인 마인드를 견지하세요.`,
+      closing: `귀하께서는 이미 이 모든 상황을 지혜롭게 헤쳐나갈 타고난 지혜와 저력을 품고 계십니다. 진심으로 응원합니다.`
     });
   };
 
-  // 상품 선택 가이드 (승인 여부 검증)
+  // 상품 선택 가이드
   const handleSelectProduct = (product) => {
     setSelectedProduct(product);
     if (product.isFree) {
       setCurrentPage('input');
     } else if (approvedProducts.includes(product.id)) {
-      // 이미 입금 승인이 완료된 유료 상품인 경우만 열람 허용
       if (!readingResult) {
         setCurrentPage('input');
       } else {
         setCurrentPage('paidResult');
       }
     } else {
-      // 입금 승인이 안 된 경우 결제 신청 및 승인 대기 페이지로 이동
       setPaymentStep('checkout');
       setCurrentPage('payment');
     }
   };
 
-  // 입금 완료 신청 (승인 대기 상태 전환)
+  // 입금 완료 신청 (승인 대기 상태로 진입)
   const handleConfirmDepositRequest = () => {
     if (!depositorName.trim()) {
       alert('실제 입금하신 분의 성함을 입력해 주세요.');
       return;
     }
     setPaymentStep('pending');
-  };
-
-  // 관리자 전용 입금 확인 승인 기능 (테스트 및 수동 입금 확인용)
-  const handleAdminApprove = () => {
-    if (selectedProduct && !approvedProducts.includes(selectedProduct.id)) {
-      setApprovedProducts(prev => [...prev, selectedProduct.id]);
-      alert(`[입금 확인 완료] ${depositorName}님의 ${selectedProduct.name} 상품 이용이 승인되었습니다.`);
-      if (!readingResult) {
-        setCurrentPage('input');
-      } else {
-        setCurrentPage('paidResult');
-      }
-    }
   };
 
   return (
@@ -315,7 +314,7 @@ export default function App() {
             {/* 상품 카드 목록 */}
             <div>
               <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '8px', textAlign: 'center' }}>월운 추천 서비스</h2>
-              <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '24px' }}>원하시는 분야를 선택하여 입금 및 수동 승인 후 상세 운세를 확인하세요.</p>
+              <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '24px' }}>원하시는 분야를 선택하여 무통장 입금 신청 후 승인을 기다려주세요.</p>
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
                 {products.map(p => {
@@ -326,7 +325,7 @@ export default function App() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                           <span style={{ fontSize: '28px' }}>{p.icon}</span>
                           <span style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '12px', backgroundColor: p.isFree ? 'rgba(74, 222, 128, 0.15)' : (isApproved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.15)'), color: p.isFree ? '#4ade80' : (isApproved ? '#34d399' : '#fcd34d'), fontWeight: 'bold', border: '1px solid ' + (p.isFree ? 'rgba(74, 222, 128, 0.3)' : (isApproved ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.3)')) }}>
-                            {p.isFree ? '무료' : (isApproved ? '입금 승인됨' : '입금 필요')}
+                            {p.isFree ? '무료' : (isApproved ? '승인됨' : '입금 대기')}
                           </span>
                         </div>
                         <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '8px' }}>{p.name}</h3>
@@ -355,7 +354,7 @@ export default function App() {
         {currentPage === 'products' && (
           <div>
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '10px', textAlign: 'center' }}>프리미엄 명리 분석 상품</h2>
-            <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>무통장 입금 후 운영자의 승인(확인)이 완료되면 해당 상품이 잠금 해제됩니다.</p>
+            <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>무통장 입금 후 운영자의 승인 확인이 완료되어야 해당 상품을 이용하실 수 있습니다.</p>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
               {products.map(p => {
@@ -385,11 +384,11 @@ export default function App() {
           </div>
         )}
 
-        {/* 3. 사주 정보 입력 폼 */}
+        {/* 3. 사주 정보 입력 폼 (출생 시간 12지지 세분화 적용) */}
         {currentPage === 'input' && (
           <div style={{ maxWidth: '550px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.5)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '40px', borderRadius: '24px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fef3c7', marginBottom: '8px', textAlign: 'center' }}>사주팔자 정보 입력</h2>
-            <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '30px' }}>정확한 4주 8자 산출을 위해 생년월일을 입력해 주세요.</p>
+            <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '30px' }}>정확한 4주 8자 산출을 위해 세부 출생 시간을 선택해 주세요.</p>
             
             {validationError && (
               <div style={{ marginBottom: '20px', padding: '12px', backgroundColor: 'rgba(127, 29, 29, 0.4)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '10px', color: '#fca5a5', fontSize: '14px' }}>
@@ -435,17 +434,26 @@ export default function App() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>태어난 시(時)</label>
+                  <label style={{ display: 'block', fontSize: '14px', color: '#cbd5e1', marginBottom: '8px' }}>태어난 시간 (12지지)</label>
                   <select 
                     name="birthTime" 
                     value={sajuForm.birthTime} 
                     onChange={handleFormChange}
                     style={{ width: '100%', padding: '12px', backgroundColor: '#0b132b', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '10px', color: '#fff', boxSizing: 'border-box' }}
                   >
-                    <option value="unknown">모름 (출생시간 미상 안내)</option>
-                    <option value="morning">오전 (06:00 ~ 11:59)</option>
-                    <option value="afternoon">오후 (12:00 ~ 17:59)</option>
-                    <option value="night">야간/새벽</option>
+                    <option value="unknown">모름 (시간 미상)</option>
+                    <option value="ja">자시 (23:00 ~ 00:59)</option>
+                    <option value="chuk">축시 (01:00 ~ 02:59)</option>
+                    <option value="in">인시 (03:00 ~ 04:59)</option>
+                    <option value="myo">묘시 (05:00 ~ 06:59)</option>
+                    <option value="jin">진시 (07:00 ~ 08:59)</option>
+                    <option value="sa">사시 (09:00 ~ 10:59)</option>
+                    <option value="o">오시 (11:00 ~ 12:59)</option>
+                    <option value="mi">미시 (13:00 ~ 14:59)</option>
+                    <option value="shin">신시 (15:00 ~ 16:59)</option>
+                    <option value="yu">유시 (17:00 ~ 18:59)</option>
+                    <option value="sul">술시 (19:00 ~ 20:59)</option>
+                    <option value="hae">해시 (21:00 ~ 22:59)</option>
                   </select>
                 </div>
               </div>
@@ -472,16 +480,16 @@ export default function App() {
           </div>
         )}
 
-        {/* 4. 무료 명리 종합 결과 페이지 */}
+        {/* 4. 무료 명리 종합 결과 페이지 (전문적 해석) */}
         {currentPage === 'result' && readingResult && (
           <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
             
             {/* 사주 8자 명식표 */}
             <div style={{ backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '36px', borderRadius: '24px', textAlign: 'center' }}>
-              <span style={{ color: '#fcd34d', fontSize: '13px', fontWeight: '600', letterSpacing: '1px' }}>FOUR PILLARS OF DESTINY</span>
-              <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#fef3c7', margin: '10px 0 20px 0' }}>{readingResult.name} 님의 사주팔자 명식표</h2>
+              <span style={{ color: '#fcd34d', fontSize: '13px', fontWeight: '600', letterSpacing: '1px' }}>FOUR PILLARS OF DESTINY — PROFESSIONAL REPORT</span>
+              <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#fef3c7', margin: '10px 0 20px 0' }}>{readingResult.name} 님의 정통 사주팔자 명식표</h2>
               
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', maxWidth: '520px', margin: '0 auto 24px auto', backgroundColor: '#0b132b', padding: '16px', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', maxWidth: '540px', margin: '0 auto 24px auto', backgroundColor: '#0b132b', padding: '16px', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                 <div>
                   <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>시주(時柱)</div>
                   <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#fcd34d' }}>{readingResult.sajuPillar.time}</div>
@@ -501,13 +509,13 @@ export default function App() {
               </div>
 
               <div style={{ fontSize: '14px', color: '#e2e8f0', marginBottom: '10px' }}>
-                당신의 중심 일간 기운: <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>{readingResult.dayMaster}</span>
+                사주 원국 중심 일간(日干): <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>{readingResult.dayMaster}</span>
               </div>
             </div>
 
             {/* 오행 분포 계산 */}
             <div style={{ backgroundColor: 'rgba(28, 37, 65, 0.4)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '24px', borderRadius: '18px' }}>
-              <h3 style={{ fontSize: '17px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '16px', textAlign: 'center' }}>📊 사주 내 오행(五行) 실제 계산 분포</h3>
+              <h3 style={{ fontSize: '17px', fontWeight: 'bold', color: '#fcd34d', marginBottom: '16px', textAlign: 'center' }}>📊 사주 내 오행(五行) 정밀 수치 분석 분포</h3>
               <div style={{ display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>
                 <div><div style={{ color: '#4ade80', fontWeight: 'bold' }}>목(木)</div><div style={{ fontSize: '18px', marginTop: '4px' }}>{readingResult.elementCounts['목']}개</div></div>
                 <div><div style={{ color: '#f87171', fontWeight: 'bold' }}>화(火)</div><div style={{ fontSize: '18px', marginTop: '4px' }}>{readingResult.elementCounts['화']}개</div></div>
@@ -517,15 +525,15 @@ export default function App() {
               </div>
             </div>
 
-            {/* 6단계 구조화 상세 해석 카드 렌더링 */}
+            {/* 전문 6단계 구조화 상세 해석 카드 렌더링 */}
             {[
-              { key: 'personality', title: '🌳 타고난 성향 및 행동 패턴', data: readingResult.personality },
-              { key: 'romance', title: '💖 연애운 및 인연 발전', data: readingResult.romance },
-              { key: 'wealth', title: '💰 재물운 및 자산 관리', data: readingResult.wealth },
-              { key: 'career', title: '💼 직업운 및 진로 가이드', data: readingResult.career },
-              { key: 'relationships', title: '🤝 대인관계 및 소통 방법', data: readingResult.relationships },
-              { key: 'health', title: '🧘 건강 관련 생활 조언', data: readingResult.health },
-              { key: 'timing', title: '⏳ 시기별 흐름 (오늘·이번 주·이번 달)', data: readingResult.timing },
+              { key: 'personality', title: '🌳 타고난 사주 원국 및 본질적 성향', data: readingResult.personality },
+              { key: 'romance', title: '💖 연애 성향 및 깊은 인연의 발전', data: readingResult.romance },
+              { key: 'wealth', title: '💰 재물운 및 실질적 자산 관리 방안', data: readingResult.wealth },
+              { key: 'career', title: '💼 직업운, 적성 및 진로 발전 가이드', data: readingResult.career },
+              { key: 'relationships', title: '🤝 대인관계 및 지혜로운 소통 방법', data: readingResult.relationships },
+              { key: 'health', title: '🧘 건강 유지 비결 및 신체 리듬 관리', data: readingResult.health },
+              { key: 'timing', title: '⏳ 시기별 운세 흐름 (오늘·이번 주·대운의 방향)', data: readingResult.timing },
             ].map(section => (
               <div key={section.key} style={{ backgroundColor: 'rgba(28, 37, 65, 0.45)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '28px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <h3 style={{ fontSize: '19px', fontWeight: 'bold', color: '#fcd34d', borderBottom: '1px solid rgba(245, 158, 11, 0.15)', paddingBottom: '10px' }}>
@@ -533,24 +541,24 @@ export default function App() {
                 </h3>
                 
                 <div style={{ fontSize: '15px', color: '#fef3c7', fontWeight: 'bold' }}>
-                  📌 핵심 요약: {section.data.summary}
+                  📌 핵심 명리 진단: {section.data.summary}
                 </div>
-                <div style={{ fontSize: '14px', color: '#cbd5e1', lineHeight: '1.6' }}>
-                  <b>구체적 해석:</b> {section.data.detail}
+                <div style={{ fontSize: '14px', color: '#cbd5e1', lineHeight: '1.7' }}>
+                  <b>심층 전문 해설:</b> {section.data.detail}
                 </div>
                 <div style={{ fontSize: '14px', color: '#93c5fd', backgroundColor: 'rgba(59, 130, 246, 0.08)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                  💡 <b>일상 예시:</b> {section.data.example}
+                  💡 <b>실생활 적용 예시:</b> {section.data.example}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
                   <div style={{ backgroundColor: 'rgba(127, 29, 29, 0.2)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#fca5a5' }}>
-                    ⚠️ <b>주의할 점:</b> {section.data.caution}
+                    ⚠️ <b>주의할 명리적 포인트:</b> {section.data.caution}
                   </div>
                   <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#6ee7b7' }}>
-                    ✨ <b>긍정 활용법:</b> {section.data.positive}
+                    ✨ <b>긍정 기운 활용법:</b> {section.data.positive}
                   </div>
                 </div>
                 <div style={{ fontSize: '13px', color: '#fef08a', backgroundColor: 'rgba(234, 179, 8, 0.1)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
-                  🏃 <b>지금 실천할 조언:</b> {section.data.action}
+                  🏃 <b>지금 실천할 개운(開運) 조언:</b> {section.data.action}
                 </div>
               </div>
             ))}
@@ -566,7 +574,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 5. 유료 결과 페이지 (입금 승인 완료 고객만 열람 허용) */}
+        {/* 5. 유료 결과 페이지 (승인 완료 고객만 열람 허용) */}
         {currentPage === 'paidResult' && selectedProduct && (
           <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'rgba(28, 37, 65, 0.6)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '40px', borderRadius: '24px' }}>
             {approvedProducts.includes(selectedProduct.id) ? (
@@ -580,10 +588,10 @@ export default function App() {
                 <div style={{ backgroundColor: '#0b132b', padding: '24px', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.2)', lineHeight: '1.8' }}>
                   <h3 style={{ color: '#fcd34d', fontSize: '18px', marginBottom: '12px' }}>📜 {selectedProduct.name} 심층 정통 명리 솔루션</h3>
                   <p style={{ color: '#cbd5e1', fontSize: '15px', marginBottom: '16px' }}>
-                    <b>{sajuForm.name || '고객'}</b>님의 사주 원국과 대운을 대조하여 산출된 <b>{selectedProduct.name}</b> 전용 분석 결과입니다. 본 리포트는 십성 상생상극과 용신(用神)을 정밀 반영하여 제공됩니다.
+                    <b>{sajuForm.name || '고객'}</b>님의 사주 원국과 세부 시주(時柱), 대운의 흐름을 대조하여 산출된 <b>{selectedProduct.name}</b> 전용 심층 분석 결과입니다. 본 리포트는 십성 격국과 용신(用神)을 정밀 반영하여 제공됩니다.
                   </p>
                   <div style={{ padding: '16px', backgroundColor: 'rgba(245, 158, 11, 0.08)', borderRadius: '12px', border: '1px dashed rgba(245, 158, 11, 0.4)', color: '#fef3c7', fontSize: '14px' }}>
-                    🌟 <b>핵심 솔루션:</b> 귀하의 타고난 강점을 유지하면서 현재 시기의 재성과 관성 기운을 가장 효율적인 방법으로 발휘할 수 있도록 현실적인 선택에 참고하세요.
+                    🌟 <b>전문 개운 솔루션:</b> 귀하의 타고난 강점을 극대화하고 현재 시기의 재성과 관성 에너지를 가장 지혜롭게 발휘하여 인생의 전환점을 맞이하세요.
                   </div>
                 </div>
 
@@ -597,13 +605,12 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              /* 승인 안 된 사용자의 강제 접근 차단 */
               <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px 0' }}>
                 <div style={{ fontSize: '48px' }}>🔒</div>
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fca5a5' }}>입금 확인 대기 중</h2>
                 <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>
                   <b>{selectedProduct.name}</b> 상품은 입금 확인 승인이 완료되지 않았습니다.<br />
-                  무통장 입금 신청 후 운영자의 승인이 이루어지면 이용하실 수 있습니다.
+                  토스뱅크 계좌로 입금하신 후 운영자의 승인을 기다려 주세요.
                 </p>
                 <button 
                   onClick={() => setCurrentPage('products')}
@@ -664,35 +671,25 @@ export default function App() {
               </div>
             )}
 
-            {/* 승인 대기 화면 (실제 입금이 확인될 때까지 차단됨) */}
+            {/* 승인 대기 화면 */}
             {paymentStep === 'pending' && (
               <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px 0' }}>
                 <div style={{ fontSize: '48px' }}>⏳</div>
                 <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#fef3c7' }}>입금 확인 대기 중</h2>
                 <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>
-                  <b>{depositorName}</b>님의 입금 신청이 접수되었습니다.<br />
-                  운영자가 토스뱅크 계좌 입금을 확인하면 즉시 수동 승인되어 유료 리포트를 보실 수 있습니다.
+                  <b>{depositorName}</b>님의 입금 신청이 정상적으로 접수되었습니다.<br />
+                  토스뱅크 계좌 입금이 확인되면 승인 처리되어 유료 리포트를 보실 수 있습니다.
                 </p>
                 
                 <div style={{ padding: '14px', backgroundColor: '#0b132b', borderRadius: '10px', fontSize: '12px', color: '#94a3b8', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                  계좌번호: {myAccount.bank} {myAccount.accountNumber} ({myAccount.holder})
-                </div>
-
-                {/* 테스트 및 직접 입금 확인용 관리자 버튼 */}
-                <div style={{ marginTop: '10px', borderTop: '1px dashed rgba(245, 158, 11, 0.2)', paddingTop: '15px' }}>
-                  <button 
-                    onClick={handleAdminApprove}
-                    style={{ width: '100%', padding: '12px', backgroundColor: '#10b981', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}
-                  >
-                    [운영자 전용] 입금 확인 및 이용 승인하기
-                  </button>
+                  입금 계좌: {myAccount.bank} {myAccount.accountNumber} ({myAccount.holder})
                 </div>
 
                 <button 
                   onClick={() => setCurrentPage('products')}
-                  style={{ width: '100%', padding: '12px', backgroundColor: '#334155', color: '#cbd5e1', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '14px', backgroundColor: '#334155', color: '#cbd5e1', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
                 >
-                  목록으로 돌아가기
+                  상품 목록으로 돌아가기
                 </button>
               </div>
             )}
@@ -769,7 +766,7 @@ export default function App() {
 
       {/* 푸터 */}
       <footer style={{ marginTop: '80px', borderTop: '1px solid rgba(245, 158, 11, 0.2)', padding: '30px 20px', textAlign: 'center', backgroundColor: '#0b132b', fontSize: '12px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <p>월운(月運) | 정통 명리학 및 무통장 승인형 서비스</p>
+        <p>월운(月運) | 정통 명리학 및 무통장 입금 승인형 서비스</p>
         <p>본 서비스는 정통 사주 명리 공식을 바탕으로 제작되었으며 참고용으로 활용하세요.</p>
       </footer>
     </div>
